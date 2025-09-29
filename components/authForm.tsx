@@ -37,7 +37,7 @@ const authFormSchema = (formType: FormType) => {
 const AuthForm = ({ type }: { type: FormType }) => {
   const [isloading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [accountId, setAccountId] = useState(null)
+  const [accountId, setAccountId] = useState(null);
 
   const formSchema = authFormSchema(type);
 
@@ -49,28 +49,24 @@ const AuthForm = ({ type }: { type: FormType }) => {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) =>{
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
-    setErrorMessage("")
-
+    setErrorMessage("");
 
     try {
-        const user= await createAcount({
-      fullName: values.fullName || "",
-      email:values.email
-    })
+      const user = await createAcount({
+        fullName: values.fullName || "",
+        email: values.email,
+      });
 
-    setAccountId(user.accountId);
-      
-    } catch (error) {
-      setErrorMessage("failed to create account")
-      
-    }finally{
-      setIsLoading(false)
+      setAccountId(user.accountId);
+    } catch (error: any) {
+      console.error("Create Account Error:", error); 
+      setErrorMessage(error.message || "failed to create account");
+    } finally {
+      setIsLoading(false);
     }
-
-
-  }
+  };
   return (
     <>
       <Form {...form}>
