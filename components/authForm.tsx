@@ -17,6 +17,7 @@ import Image from "next/image";
 import { error } from "console";
 import Link from "next/link";
 import { createAcount } from "@/lib/action/user.action";
+import OTPModal from "./OTPModal";
 
 // const formSchema = z.object({
 //   username: z.string().min(2).max(50),
@@ -151,6 +152,9 @@ const AuthForm = ({ type }: { type: FormType }) => {
           </div>
         </form>
       </Form>
+
+      {accountId && (<OTPModal email={form.getValues('email')}
+      accountId={accountId}/>)}
       ;
     </>
   );
