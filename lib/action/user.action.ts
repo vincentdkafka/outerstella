@@ -2,7 +2,7 @@
 "use server";
 
 import { ID, Query } from "node-appwrite";
-import { createadminClient } from "../appwrite";
+import { createadminClient, createSessionClient } from "../appwrite";
 import { appwriteConfig } from "../appwrite/config";
 import { parseStringify } from "../utils";
 import { cookies } from "next/headers";
@@ -11,7 +11,7 @@ const getUserByEmail = async (email: string) => {
   const { databases } = await createadminClient();
 
   const result = await databases.listDocuments(
-    appwriteConfig.databseId,
+    appwriteConfig.databaseId,
     appwriteConfig.userCollectionId,
     [Query.equal("email", [email])]
   );
@@ -52,7 +52,7 @@ export const createAcount = async ({
     const { databases } = await createadminClient();
 
     await databases.createDocument(
-      appwriteConfig.databseId,
+      appwriteConfig.databaseId,
       appwriteConfig.userCollectionId,
       ID.unique(),
       {
@@ -82,7 +82,7 @@ export const verifySecret = async ({
 
     const session = await account.createSession(accountId, password);
 
-    (await cookies()).set("anpwrite-session", session.secret, {
+    (await cookies()).set("appwrite-session", session.secret, {
       path: "/",
       httpOnly: true,
       sameSite: "strict",
@@ -92,3 +92,22 @@ export const verifySecret = async ({
     return parseStringify({ sessionId: session.$id });
   } catch (error) {}
 };
+
+
+export const getCurrentUser = async()=>{
+  const {databases, account} = await createSessionClient();
+
+  const result = await account.get()
+
+  const user = await databases.listDocuments(
+    appwriteConfig.databaseId,
+    appwriteConfig.userCollectionId,
+    [Query.equal("accountId", result.$id)]
+
+  )
+
+
+  if(user.total<= 0) return null;
+
+  return parseStringify(user.documents[0])
+}

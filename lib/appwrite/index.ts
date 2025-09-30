@@ -12,7 +12,7 @@ export const createSessionClient = async () => {
 
   const session = (await cookies()).get("appwrite-session");
 
-  if (!session || !session.value) throw new Error("No session");
+  if (!session || !session.value) throw new Error("we are stucked here in index.ts");
 
   client.setSession(session.value);
 
