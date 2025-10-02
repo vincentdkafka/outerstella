@@ -1,29 +1,34 @@
-import React from 'react'
-import { Button } from './ui/button'
-import Image from 'next/image'
-import Search from './Search'
-import FileUploader from './FileUploader'
+import React from "react";
+import { Button } from "./ui/button";
+import Image from "next/image";
+import Search from "./Search";
+import FileUploader from "./FileUploader";
+import { signOutUser } from "@/lib/action/user.action";
 
 const Header = () => {
   return (
-    <header className='header'>
-        <Search/>
-        <div className="header-wrapper">
-            <FileUploader/>
-            <form action="">
-                <Button>
-                    <Image src='/assets/icons/logout.svg'
-                    alt='logo'
-                    width={24}
-                    height={24}
-                    className='w-6'/>
-                </Button>
-            </form>
+    <header className="header">
+      <Search />
+      <div className="header-wrapper">
+        <FileUploader />
+        <form action={async ()=>{
+          "use server";
+          await signOutUser()
 
-        </div>
-
+        }}>
+          <Button type="submit" className="sign-out-button" >
+            <Image
+              src="/assets/icons/logout.svg"
+              alt="logo"
+              width={24}
+              height={24}
+              className="w-6"
+            />
+          </Button>
+        </form>
+      </div>
     </header>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;

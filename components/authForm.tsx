@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { error } from "console";
 import Link from "next/link";
-import { createAcount } from "@/lib/action/user.action";
+import { createAcount, SignInUser } from "@/lib/action/user.action";
 import OTPModal from "./OTPModal";
 
 // const formSchema = z.object({
@@ -55,10 +55,14 @@ const AuthForm = ({ type }: { type: FormType }) => {
     setErrorMessage("");
 
     try {
-      const user = await createAcount({
+      const user = 
+
+      type === 'sign-up'
+    
+      ? await createAcount({
         fullName: values.fullName || "",
-        email: values.email,
-      });
+        email: values.email, 
+      }) : await SignInUser({email: values.email})                  
 
       setAccountId(user.accountId);
     } catch (error: any) {
@@ -155,7 +159,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
 
       {accountId && (<OTPModal email={form.getValues('email')}
       accountId={accountId}/>)}
-      ;
+      
     </>
   );
 };

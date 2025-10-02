@@ -6,6 +6,7 @@ import { createadminClient, createSessionClient } from "../appwrite";
 import { appwriteConfig } from "../appwrite/config";
 import { parseStringify } from "../utils";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 const getUserByEmail = async (email: string) => {
   const { databases } = await createadminClient();
@@ -93,21 +94,46 @@ export const verifySecret = async ({
   } catch (error) {}
 };
 
+export const getCurrentUser = async () => {
+  const { databases, account } = await createSessionClient();
 
-export const getCurrentUser = async()=>{
-  const {databases, account} = await createSessionClient();
-
-  const result = await account.get()
+  const result = await account.get();
 
   const user = await databases.listDocuments(
     appwriteConfig.databaseId,
     appwriteConfig.userCollectionId,
     [Query.equal("accountId", result.$id)]
+  );
 
-  )
+  if (user.total <= 0) return null;
 
+  return parseStringify(user.documents[0]);
+};
 
-  if(user.total<= 0) return null;
+export const signOutUser = async () => {
+  const { account } = await createSessionClient();
 
-  return parseStringify(user.documents[0])
-}
+  try {
+    await account.deleteSession("current");
+    (await cookies()).delete("appwrite-session");
+  } catch (error) {
+    handleError(error, "failed to sign oout user");
+  } finally {
+    redirect("/sign-in");
+  }
+};
+
+export const SignInUser = async ({ email }: { email: string }) => {
+  try {
+    const existingUser = await getUserByEmail(email);
+
+    if (existingUser) {
+      await sendEmailOTP({ email });
+      return parseStringify({ accountId: existingUser.accountId });
+    }
+
+    return parseStringify({ accountId: null, error: "User not Found" });
+  } catch (error) {
+    handleError(error, "failed to sign-0in user");
+  }
+};
