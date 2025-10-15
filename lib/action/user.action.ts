@@ -25,11 +25,12 @@ const handleError = (error: unknown, message: string) => {
   throw error;
 };
 
-export const sendEmailOTP = async ({ email }: { email: string }) => {
+export const sendEmailOTP = async ({ email, accountId }: { email: string; accountId?: string }) => {
   const { account } = await createadminClient();
 
   try {
-    const session = await account.createEmailToken(ID.unique(), email);
+    const targetAccountId = accountId ?? ID.unique();
+    const session = await account.createEmailToken(targetAccountId, email);
 
     return session.userId;
   } catch (error) {
@@ -46,29 +47,31 @@ export const createAcount = async ({
 }) => {
   const existingUser = await getUserByEmail(email);
 
-  const accountId = await sendEmailOTP({ email });
-  if (!accountId) throw new Error("failed to send an OTP");
-
-  if (!existingUser) {
-    const { databases } = await createadminClient();
-
-    await databases.createDocument(
-      appwriteConfig.databaseId,
-      appwriteConfig.userCollectionId,
-      ID.unique(),
-      {
-        fullName,
-        email,
-        avatar:
-          "https://www.shutterstock.com/image-vector/young-smiling-man-avatar-brown-600nw-2261401207.jpg",
-        accountId,
-      }
-    );
+  if (existingUser) {
+    const sentForExisting = await sendEmailOTP({ email, accountId: existingUser.accountId });
+    if (!sentForExisting) throw new Error("failed to send an OTP");
+    return parseStringify({ accountId: existingUser.accountId });
   }
 
-  return parseStringify({
-    accountId,
-  });
+  const newAccountId = await sendEmailOTP({ email });
+  if (!newAccountId) throw new Error("failed to send an OTP");
+
+  const { databases } = await createadminClient();
+
+  await databases.createDocument(
+    appwriteConfig.databaseId,
+    appwriteConfig.userCollectionId,
+    ID.unique(),
+    {
+      fullName,
+      email,
+      avatar:
+        "https://www.shutterstock.com/image-vector/young-smiling-man-avatar-brown-600nw-2261401207.jpg",
+      accountId: newAccountId,
+    }
+  );
+
+  return parseStringify({ accountId: newAccountId });
 };
 
 export const verifySecret = async ({
@@ -87,33 +90,38 @@ export const verifySecret = async ({
       path: "/",
       httpOnly: true,
       sameSite: "strict",
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
     });
 
     return parseStringify({ sessionId: session.$id });
-  } catch (error) {}
+  } catch (error) {
+    return null;
+  }
 };
 
 export const getCurrentUser = async () => {
-  const { databases, account } = await createSessionClient();
+  try {
+    const { databases, account } = await createSessionClient();
 
-  const result = await account.get();
+    const result = await account.get();
 
-  const user = await databases.listDocuments(
-    appwriteConfig.databaseId,
-    appwriteConfig.userCollectionId,
-    [Query.equal("accountId", result.$id)]
-  );
+    const user = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      [Query.equal("accountId", result.$id)]
+    );
 
-  if (user.total <= 0) return null;
+    if (user.total <= 0) return null;
 
-  return parseStringify(user.documents[0]);
+    return parseStringify(user.documents[0]);
+  } catch (error) {
+    return null;
+  }
 };
 
 export const signOutUser = async () => {
-  const { account } = await createSessionClient();
-
   try {
+    const { account } = await createSessionClient();
     await account.deleteSession("current");
     (await cookies()).delete("appwrite-session");
   } catch (error) {
@@ -128,7 +136,7 @@ export const SignInUser = async ({ email }: { email: string }) => {
     const existingUser = await getUserByEmail(email);
 
     if (existingUser) {
-      await sendEmailOTP({ email });
+      await sendEmailOTP({ email, accountId: existingUser.accountId });
       return parseStringify({ accountId: existingUser.accountId });
     }
 
