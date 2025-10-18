@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -92,6 +93,12 @@ const ActionDropDown = ({ file }: { file: Models.Document }) => {
           <DialogTitle className="text-center text-light-100">
             {label}
           </DialogTitle>
+          <DialogDescription className="text-center text-muted-foreground">
+            {value === "rename" && "Enter a new name for the file"}
+            {value === "details" && "View file information and details"}
+            {value === "share" && "Share this file with other users"}
+            {value === "delete" && "This action cannot be undone"}
+          </DialogDescription>
           {value === "rename" && (
             <Input
               type="text"

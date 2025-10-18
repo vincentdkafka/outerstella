@@ -56,7 +56,7 @@ const MobileNavigation = ({
             className="h-auto"
           />
         </SheetTrigger>
-        <SheetContent className="shad-sheet h=screen px-3 bg-white">
+        <SheetContent className="shad-sheet h-screen px-3 bg-white">
           <SheetTitle>
             <div className="header-user">
               <Image
@@ -76,7 +76,7 @@ const MobileNavigation = ({
           <nav className="mobile-nav">
             <ul className="mobile-nav-list">
               {navItems.map(({ url, name, icon }) => (
-                <Link key={name} href="{url}" className="lg:w-full">
+                <Link key={name} href={url} className="lg:w-full">
                   <li
                     className={cn(
                       "mobile-nav-item",
@@ -100,7 +100,7 @@ const MobileNavigation = ({
             </ul>
           </nav>
 
-          <div className="flex flex-col mt-4 justify-betweengap-5">
+          <div className="flex flex-col mt-4 justify-between gap-5">
             <FileUploader ownerId={ownerId} accountId={accountId}/>
             <Button type="submit" className="sign-out-button mt-4" onClick={ async ()=>await signOutUser()}>
               <Image
