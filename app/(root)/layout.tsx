@@ -6,6 +6,8 @@ import { redirect } from "next/navigation";
 import { Toaster } from "@/components/ui/toaster"
 import React from "react";
 
+export const dynamic = "force-dynamic"
+
 const layout = async ({ children }: { children: React.ReactNode }) => {
   const currentUser = await getCurrentUser();
 
