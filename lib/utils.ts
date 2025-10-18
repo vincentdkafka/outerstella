@@ -1,3 +1,4 @@
+import { FileType } from "@/types";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -20,7 +21,7 @@ export const convertFileSize = (sizeInBytes: number, digits?: number) => {
     return sizeInMB.toFixed(digits || 1) + " MB"; // Less than 1 GB, show in MB
   } else {
     const sizeInGB = sizeInBytes / (1024 * 1024 * 1024);
-    return sizeInGB.toFixed(digits || 1) + " GB"; // 1 GB or more, show in GB
+    return sizeInGB.toFixed(digits || 1) + " GB"; 
   }
 };
 
