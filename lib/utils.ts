@@ -81,35 +81,22 @@ export const formatDateTime = (isoString: string | null | undefined) => {
 
   const date = new Date(isoString);
 
-  // Get hours and adjust for 12-hour format
-  let hours = date.getHours();
-  const minutes = date.getMinutes();
-  const period = hours >= 12 ? "pm" : "am";
+  // Convert UTC to IST (UTC + 5:30)
+  const istDate = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
 
-  // Convert hours to 12-hour format
+  let hours = istDate.getHours();
+  const minutes = istDate.getMinutes();
+  const period = hours >= 12 ? "pm" : "am";
   hours = hours % 12 || 12;
 
-  // Format the time and date parts
   const time = `${hours}:${minutes.toString().padStart(2, "0")}${period}`;
-  const day = date.getDate();
-  const monthNames = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-  const month = monthNames[date.getMonth()];
+  const day = istDate.getDate();
+  const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const month = monthNames[istDate.getMonth()];
 
   return `${time}, ${day} ${month}`;
 };
+
 
 export const getFileIcon = (
   extension: string | undefined,
